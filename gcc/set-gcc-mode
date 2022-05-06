@@ -1,0 +1,11 @@
+#! /bin/bash
+echo "[ 1 / 1 ] Setting GCC as system compiler..." && \
+for b in c++ cpp g++ gcc 
+do
+  rm -v          /usr/bin/$b
+  ln -sv $b.gnu  /usr/bin/$b
+done
+rm -v /lib/cpp
+rm -v /usr/bin/cc
+ln -sv ../usr/bin/cpp.gnu /lib/cpp
+ln -sv gcc.gnu   /usr/bin/cc

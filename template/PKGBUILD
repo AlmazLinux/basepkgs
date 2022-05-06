@@ -1,0 +1,21 @@
+pkgname=
+pkgver=
+pkgrel=1
+pkgdesc=""
+arch=('x86_64')
+url=""
+license=('custom')
+backup=()
+source=()
+
+prepare() {
+}
+
+build() {
+}
+
+check() {
+}
+
+package() {
+}

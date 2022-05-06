@@ -1,0 +1,66 @@
+pkgname=musl-libc
+_pkgname=musl
+pkgver=1.2.2
+pkgrel=1
+pkgdesc="Musl C Library"
+arch=('x86_64')
+url="https://musl.libc.org"
+license=('MIT')
+provides=(ldconfig)
+backup=(etc/ld-musl-${CARCH}.path)
+source=(${_pkgname}-${pkgver}.tar.gz
+	fix-utmp-wtmp-paths.patch
+	0001-riscv64-define-ELF_NFPREG.patch
+	handle-aux-at_base.patch
+	syscall-cp-epoll.patch
+	ld-musl-${CARCH}.path
+	ldconfig
+	cdefs.h
+	queue.h
+	tree.h
+	error.h
+	__stack_chk_fail_local.c)
+
+prepare() {
+    cd "${_pkgname}-${pkgver}"
+    patch -Np1 -i ../fix-utmp-wtmp-paths.patch
+    patch -Np1 -i ../0001-riscv64-define-ELF_NFPREG.patch
+    patch -Np1 -i ../handle-aux-at_base.patch
+    patch -Np1 -i ../syscall-cp-epoll.patch
+}
+
+build() {
+    cd "${_pkgname}-${pkgver}"
+
+    mkdir build
+    cd build
+
+    CC=clang CXX=clang++ LD=ld.lld AR=llvm-ar RANLIB=llvm-ranlib LDFLAGS="$LDFLAGS -Wl,-soname,libc.musl-${CARCH}.so.1" ../configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-gcc-wrapper
+
+    make
+
+    clang -fpie -c ${srcdir}/__stack_chk_fail_local.c -o ${srcdir}/__stack_chk_fail_local.o
+    llvm-ar r ${srcdir}/libssp_nonshared.a ${srcdir}/__stack_chk_fail_local.o
+}
+
+package() {
+    cd "${_pkgname}-${pkgver}"/build
+    make DESTDIR=${pkgdir} install    
+    
+    mkdir -pv ${pkgdir}/etc
+    install -v -m644 ${srcdir}/ld-musl-${CARCH}.path ${pkgdir}/etc/ld-musl-${CARCH}.path
+
+    mkdir -pv ${pkgdir}/{usr/bin,bin}
+    ln -sv /usr/lib/libc.so ${pkgdir}/bin/ldd
+    install -v -m755 ${srcdir}/ldconfig ${pkgdir}/usr/bin/ldconfig
+
+    mkdir -pv ${pkgdir}/usr/include/sys
+    for h in cdefs queue tree error
+    do
+        install -v -m644 ${srcdir}/$h.h ${pkgdir}/usr/include/sys
+    done
+
+    install -v -m644 ${srcdir}/libssp_nonshared.a ${pkgdir}/usr/lib/libssp_nonshared.a
+
+    rm -v ${pkgdir}/usr/include/utmpx.h
+}

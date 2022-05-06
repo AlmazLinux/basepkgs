@@ -1,0 +1,23 @@
+pkgname=s6-linux-utils
+pkgver=2.5.1.5
+pkgrel=1
+pkgdesc=""
+arch=('x86_64')
+url=""
+license=('custom')
+backup=()
+source=(${pkgname}-${pkgver}.tar.gz)
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    CC=clang CXX=clang++ \
+        ./configure --disable-allstatic \
+            --prefix=/usr       \
+            --with=dynlib=/lib
+    make
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make DESTDIR=${pkgdir} install
+}

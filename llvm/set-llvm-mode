@@ -1,0 +1,9 @@
+#! /bin/bash
+echo "[ 1 / 1 ] Setting LLVM as system compiler..." && \
+for b in c++ cpp g++ gcc cc
+do
+  rm -v  /usr/bin/$b
+  ln -sv clang-12  /usr/bin/$b
+done
+rm -v /lib/cpp
+ln -sv /usr/bin/clang-12 /lib/cpp

@@ -1,0 +1,39 @@
+pkgname=libelf
+_elfname=elfutils
+pkgver=0.183
+pkgrel=1
+pkgdesc="ELF executable format library"
+arch=('x86_64')
+url=""
+license=('custom')
+backup=()
+source=(${_elfname}-${pkgver}.tar.bz2
+	elfutils-musl-clang.patch
+	error.h)
+
+prepare() {
+    cd ${srcdir}/${_elfname}-${pkgver}
+    cp -vr ${srcdir}/error.h ${srcdir}/${_elfname}-${pkgver}/lib/
+    cp -vr ${srcdir}/error.h ${srcdir}/${_elfname}-${pkgver}/src/
+    patch -Np1 -i ${srcdir}/elfutils-musl-clang.patch
+    autoreconf -ifv
+}
+
+build() {
+    cd ${srcdir}/${_elfname}-${pkgver}
+    CFLAGS="-Wno-error -Wno-null-dereference -DFNM_EXTMATCH=0" \
+    CXXFLAGS="-Wno-error -Wl,-z,stack-size=2097152" \
+    ./configure --prefix=/usr \
+                --disable-debuginfod \
+                --disable-libdebuginfod
+    make -C lib
+    make -C libelf
+}
+
+package() {
+    cd ${srcdir}/${_elfname}-${pkgver}
+    make -C libelf DESTDIR=${pkgdir} install
+    mkdir -pv ${pkgdir}/usr/lib/pkgconfig
+    install -vm644 config/libelf.pc ${pkgdir}/usr/lib/pkgconfig/
+}
+

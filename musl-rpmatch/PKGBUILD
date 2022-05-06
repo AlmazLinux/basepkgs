@@ -1,0 +1,26 @@
+pkgname=musl-rpmatch
+pkgver=1.0
+pkgrel=1
+pkgdesc="Musl RPMatch realization"
+arch=('x86_64')
+url="https://github.com/pullmoll/musl-obstack"
+license=('custom')
+backup=()
+source=(${pkgname}-${pkgver}.tar.gz)
+
+prepare(){
+    cd "${pkgname}-${pkgver}"
+    ./bootstrap.sh
+} 
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    CC=clang CXX=clang++ CFLAGS=" -fPIC" \
+               ./configure --enable-shared --enable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var
+    make
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make DESTDIR=${pkgdir} install
+}

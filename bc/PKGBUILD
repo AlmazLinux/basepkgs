@@ -1,0 +1,24 @@
+pkgname=bc
+pkgver=4.0.2
+pkgrel=1
+pkgdesc="An arbitrary precision calculator language"
+arch=('x86_64')
+url="https://www.gnu.org/software/bc/"
+license=('GPL')
+source=(${pkgname}-${pkgver}.tar.xz)
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    PREFIX=/usr CC=clang CFLAGS="-std=c99" ./configure.sh -G -O3
+    make
+}
+
+check() {
+    cd "${pkgname}-${pkgver}"
+    echo "quit" | ./bc/bc -l Test/checklib.b 2>&1 | tee ${pkgname}-${pkgver}-check-log
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make DESTDIR=${pkgdir} install
+}

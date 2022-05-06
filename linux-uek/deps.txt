@@ -1,0 +1,14 @@
+  asciidoc asciidoc-base asciidoc-common default-jdk-headless dkms docbook-dsssl docbook-utils
+  docbook-xsl docutils-common dvipng dwarves fig2dev fonts-font-awesome fonts-lmodern imagemagick
+  imagemagick-6-common imagemagick-6.q16 kernel-wedge latexmk libapache-pom-java libaudit-dev libcap-dev
+  libcap-ng-dev libcommons-logging-java libcommons-parent-java libfontbox-java libiberty-dev liblqr-1-0
+  libmagickcore-6.q16-6 libmagickwand-6.q16-6 libnetpbm10 libnewt-dev libnuma-dev libosp5 libostyle1c2
+  libpci-dev libpdfbox-java libptexenc1 librsvg2-bin libsgmls-perl libslang2-dev libteckit0 libtexlua53
+  libtexluajit2 libudev-dev libunwind-dev libzzip-0-13 lynx lynx-common makedumpfile netpbm openjade
+  openjdk-11-jdk-headless opensp preview-latex-style python-babel-localedata python3-alabaster
+  python3-babel python3-docutils python3-imagesize python3-jinja2 python3-packaging python3-pygments
+  python3-pyparsing python3-roman python3-snowballstemmer python3-sphinx python3-sphinx-rtd-theme
+  sgmlspl sharutils sphinx-common sphinx-rtd-theme-common teckit texlive-base texlive-binaries
+  texlive-fonts-recommended texlive-formats-extra texlive-latex-base texlive-latex-extra
+  texlive-latex-recommended texlive-pictures texlive-plain-generic texlive-xetex tipa xmlto xsltproc
+

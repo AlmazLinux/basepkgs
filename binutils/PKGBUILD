@@ -1,0 +1,95 @@
+pkgname=binutils
+pkgver=2.38
+pkgrel=1
+pkgdesc="A set of programs to assemble and manipulate binary and object files"
+arch=('x86_64')
+url="http://www.gnu.org/software/binutils/"
+license=('GPL')
+backup=()
+source=(${pkgname}-${pkgver}.tar.xz
+	binutils-ld-fix-static-linking.patch
+	binutils-mips-disable-assert.patch
+	gold-mips.patch
+	ld-bfd-mips.patch
+	config.cache
+	set-gnu-bin-mode)
+
+prepare() {
+    cd "${pkgname}-${pkgver}"
+    patch -Np1 -i ../binutils-ld-fix-static-linking.patch
+    patch -Np1 -i ../binutils-mips-disable-assert.patch
+    patch -Np1 -i ../gold-mips.patch
+    patch -Np1 -i ../ld-bfd-mips.patch
+}
+
+build() {
+    cd "${pkgname}-${pkgver}"
+
+    mkdir -v build
+    cd build
+
+    cp -v ${srcdir}/config.cache ../config.cache
+    ../configure --prefix=/usr                       \
+		 --enable-gold                       \
+		 --enable-ld=default                 \
+		 --enable-plugins                    \
+		 --enable-shared                     \
+		 --disable-werror                    \
+		 --with-system-zlib                  \
+                 --enable-relro                      \
+                 --enable-lto                        \
+                 --disable-nls                       \
+                 --enable-deterministic-archives     \
+                 --enable-default-hash-style=gnu     \
+                 --enable-threads                    \
+                 --disable-multilib                  \
+                 --disable-compressed-debug-sections \
+                 --with-mmap --enable-targets=x86_64-pep --enable-64-bit-bfd --cache-file=../config.cache \
+                 --with-pkgversion="Almaz Linux 0.0.1"
+
+    make tooldir=/usr
+
+    cp -a libiberty libiberty-pic
+    make -C libiberty-pic clean
+    make CFLAGS="$CFLAGS -fPIC" -C libiberty-pic
+
+    cp -a bfd bfd-pic
+    make -C bfd-pic clean
+    make CFLAGS="$CFLAGS -fPIC -fvisibility=hidden" -C bfd-pic
+
+    cp -a opcodes opcodes-pic
+    make -C opcodes-pic clean
+    make CFLAGS="$CFLAGS -fPIC" -C opcodes-pic
+}
+
+check() {
+   cd "${pkgname}-${pkgver}/build"
+   make -k check 2>&1 | tee ${pkgname}-${pkgver}-check-log
+}
+
+package() {
+    cd "${pkgname}-${pkgver}/build"
+    make prefix=${pkgdir}/usr tooldir=${pkgdir}/usr install
+
+    rm -fv  ${pkgdir}/usr/bin/ld
+    cd ..
+    install -v -m 644 include/libiberty.h ${pkgdir}/usr/include/libiberty.h
+    install -v -m 644 include/demangle.h  ${pkgdir}/usr/include/demangle.h
+
+    cd build
+    install -v -m 644 libiberty-pic/libiberty.a ${pkgdir}/usr/lib/libiberty.a
+    install -v -m 644 bfd-pic/libbfd.a          ${pkgdir}/usr/lib/libbfd.a
+    install -v -m 644 opcodes-pic/libopcodes.a  ${pkgdir}/usr/lib/libopcodes.a
+
+    rm -fv ${pkgdir}/usr/lib/lib{bfd,opcodes}.so
+    echo "INPUT ( /usr/lib/libbfd.a -liberty -lz )"  > ${pkgdir}/usr/lib/libbfd.so
+    echo "INPUT ( /usr/lib/libopcodes.a -lbfd )"     > ${pkgdir}/usr/lib/libopcodes.so
+
+    for b in addr2line ar as c++filt dwp elfedit gprof nm objcopy objdump ranlib readelf size strings strip
+    do
+        mv -v ${pkgdir}/usr/bin/{$b,$b.gnu}
+    done
+
+    cp -v $srcdir/set-gnu-bin-mode $pkgdir/usr/bin/ 
+    chmod +x $pkgdir/usr/bin/set-gnu-bin-mode
+}

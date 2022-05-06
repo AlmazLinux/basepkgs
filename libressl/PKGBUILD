@@ -1,0 +1,36 @@
+pkgname=libressl
+pkgver=3.3.3
+pkgrel=1
+pkgdesc="OpenBSD SSL realization"
+arch=('x86_64')
+url=""
+license=('custom')
+backup=()
+source=(${pkgname}-${pkgver}.tar.gz
+	ssl-libcompat.patch)
+
+prepare() {
+    cd ${srcdir}/${pkgname}-${pkgver}
+    patch -Np1 -i ${srcdir}/ssl-libcompat.patch
+    autoreconf -vif
+}
+
+build() {
+    cd ${srcdir}/${pkgname}-${pkgver}
+    CC=clang CXX=clang++       \
+        CFLAGS="-L/usr/lib $CFLAGS" \
+        ./configure \
+           --build=x86_64-linux-musl \
+           --host=x86_64-linux-musl \
+           --prefix=/usr \
+           --sysconfdir=/etc \
+           --mandir=/usr/share/man \
+           --localstatedir=/var 
+    make 
+}
+
+package() {
+    cd ${srcdir}/${pkgname}-${pkgver}
+    make DESTDIR=${pkgdir} install
+}
+

@@ -1,0 +1,19 @@
+pkgname=meson
+pkgver=0.58.0
+pkgrel=1
+pkgdesc="Meson modern build system written in Python"
+arch=('x86_64')
+url=""
+license=('custom')
+backup=()
+source=(${pkgname}-${pkgver}.tar.gz)
+
+build() {
+    cd ${srcdir}/${pkgname}-${pkgver}
+    python3 setup.py build
+}
+
+package() {
+    cd ${srcdir}/${pkgname}-${pkgver}
+    python3 setup.py install --root=${pkgdir}
+}

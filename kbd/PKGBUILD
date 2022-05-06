@@ -1,0 +1,59 @@
+pkgname=kbd
+pkgver=2.4.0
+pkgrel=1
+pkgdesc="Keytable files and keyboard utilities"
+arch=('x86_64')
+url="http://www.kbd-project.org/"
+license=('GPL')
+source=(${pkgname}-${pkgver}.tar.xz
+	kbd-2.3.0-backspace-1.patch
+	error.h)
+
+prepare() {
+    cd "${pkgname}-${pkgver}"
+
+    patch -Np1 -i ${srcdir}/kbd-2.3.0-backspace-1.patch
+
+    sed -i 's/\(RESIZECONS_PROGS=\)yes/\1no/g' configure
+    sed -i 's/resizecons.8 //' docs/man/man8/Makefile.in
+    mv data/keymaps/i386/qwertz/cz{,-qwertz}.map
+    mv data/keymaps/i386/olpc/es{,-olpc}.map
+    mv data/keymaps/i386/olpc/pt{,-olpc}.map
+    mv data/keymaps/i386/fgGIod/trf{,-fgGIod}.map
+    mv data/keymaps/i386/colemak/{en-latin9,colemak}.map
+    cd data/keymaps/i386
+    cp qwerty/pt-latin9.map qwerty/pt.map
+    cp qwerty/sv-latin1.map qwerty/se-latin1.map
+
+    mv azerty/fr.map azerty/fr-old.map
+    cp azerty/fr-latin9.map azerty/fr.map
+
+    cp azerty/fr-latin9.map azerty/fr-latin0.map # legacy alias
+    cd -
+    cp -v ${srcdir}/error.h .
+    autoreconf -fvi
+    sed -e '/^PKG_CHECK_MODULES.*/d' -i configure.ac
+    sed -e 's,tests ,,g' -i Makefile.am
+}
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    CC=clang CXX=clang++ ./configure --prefix=/usr --disable-vlock
+    make
+}
+
+check() {
+    cd "${pkgname}-${pkgver}"
+    make check 2>&1 | tee ${pkgname}-${pkgver}-check-log
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make DESTDIR=${pkgdir} install
+
+    install -vdm755 ${pkgdir}/usr/share/doc/kbd-${pkgver}
+    cp -Rv docs/doc/* ${pkgdir}/usr/share/doc/kbd-${pkgver}
+    for f in sun amiga atari; do
+      rm -vrf ${pkgdir}/usr/share/keymaps/${f}
+    done
+}

@@ -1,0 +1,142 @@
+pkgname=llvm
+pkgver=14.0.0
+pkgrel=1
+arch=('x86_64')
+url="https://llvm.org/"
+license=('custom:Apache 2.0 with LLVM Exception')
+source=(llvm-$pkgver.src.tar.xz
+	clang-$pkgver.src.tar.xz
+	compiler-rt-$pkgver.src.tar.xz
+	lld-$pkgver.src.tar.xz
+	libunwind-$pkgver.src.tar.xz
+	set-llvm-mode
+	set-llvm-bin-mode
+	compiler-rt-aarch64-ucontext.patch
+	compiler-rt-sanitizer-ppc64-musl.patch
+	compiler-rt-size_t.patch
+	compiler-rt-xray-ppc64-musl.patch
+	clang-001-fix-unwind-chain-inclusion.patch
+	clang-002-add-musl-triples.patch
+	clang-003-ppc64-dynamic-linker-path.patch
+	clang-004-ppc64-musl-elfv2.patch
+	llvm-001-musl.patch
+	llvm-002-musl-ppc64-elfv2.patch
+	llvm-003-ppc-secureplt.patch
+	llvm-004-override-opt.patch
+	llvm-005-ppc-bigpic.patch
+	llvm-006-aarch64-mf_exec.patch)
+
+prepare() {
+  cd "$srcdir/llvm-$pkgver.src"
+
+  mv -v $srcdir/compiler-rt-$pkgver.src projects/compiler-rt
+  mv -v $srcdir/clang-$pkgver.src tools/clang
+  mv -v $srcdir/lld-$pkgver.src tools/lld
+
+  cd "$srcdir/llvm-$pkgver.src"
+  mkdir build
+  ## https://bugs.archlinux.org/task/70697
+  #patch -Np2 -i ../llvm-link-with-Bsymbolic-functions.patch
+  ## https://reviews.llvm.org/D102453
+  #patch -Np2 -i ../add-fno-semantic-interposition.patch
+  #
+  ## https://bugs.llvm.org/show_bug.cgi?id=50823
+  #patch -Np2 -i ../x86-twist-shuffle-mask.patch
+  #
+  ## Work around intermittent 'clang -O -g' crashes
+  ## https://bugs.llvm.org/show_bug.cgi?id=50611#c3
+  #patch -Np2 -i ../no-strict-aliasing-DwarfCompileUnit.patch
+
+  cd $srcdir/llvm-$pkgver.src/projects/compiler-rt
+  patch -Np1 -i $srcdir/compiler-rt-aarch64-ucontext.patch
+  patch -Np1 -i $srcdir/compiler-rt-sanitizer-ppc64-musl.patch
+  patch -Np1 -i $srcdir/compiler-rt-size_t.patch
+  patch -Np1 -i $srcdir/compiler-rt-xray-ppc64-musl.patch
+  cd $srcdir/llvm-$pkgver.src/tools/clang
+  patch -Np1 -i $srcdir/clang-001-fix-unwind-chain-inclusion.patch
+  patch -Np1 -i $srcdir/clang-002-add-musl-triples.patch
+  patch -Np1 -i $srcdir/clang-003-ppc64-dynamic-linker-path.patch
+  patch -Np1 -i $srcdir/clang-004-ppc64-musl-elfv2.patch
+  cd $srcdir/llvm-$pkgver.src
+  patch -Np1 -i $srcdir/llvm-001-musl.patch
+  patch -Np1 -i $srcdir/llvm-002-musl-ppc64-elfv2.patch
+  patch -Np1 -i $srcdir/llvm-003-ppc-secureplt.patch
+  patch -Np1 -i $srcdir/llvm-004-override-opt.patch
+  patch -Np1 -i $srcdir/llvm-005-ppc-bigpic.patch
+  patch -Np1 -i $srcdir/llvm-006-aarch64-mf_exec.patch
+  sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' $srcdir/llvm-$pkgver.src/projects/compiler-rt/cmake/config-ix.cmake
+  mkdir -pv $srcdir/llvm-$pkgver.src/tools/lld/include/mach-o
+  mv -v $srcdir/libunwind-$pkgver.src/include/mach-o/compact_unwind_encoding.h $srcdir/llvm-$pkgver.src/tools/lld/include/mach-o/
+
+}
+
+build() {
+  cd "$srcdir/llvm-$pkgver.src/build"
+
+  cmake .. -G "Unix Makefiles" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DLLVM_LINK_LLVM_DYLIB=ON \
+      -DLLVM_BUILD_LLVM_DYLIB=ON \
+      -DLLVM_BUILD_TESTS=OFF \
+      -DLLVM_ENABLE_LIBEDIT=OFF \
+      -DLLVM_ENABLE_LIBXML2=OFF \
+      -DLLVM_ENABLE_LIBCXX=ON \
+      -DLLVM_INCLUDE_GO_TESTS=OFF \
+      -DLLVM_INCLUDE_TESTS=OFF \
+      -DLLVM_INCLUDE_DOCS=OFF \
+      -DLLVM_INCLUDE_EXAMPLES=OFF \
+      -DLLVM_INCLUDE_BENCHMARKS=OFF \
+      -DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl \
+      -DLLVM_HOST_TRIPLE="x86_64-pc-linux-musl" \
+      -DLLVM_TARGET_ARCH="X86" \
+      -DLLVM_TARGETS_TO_BUILD="host;BPF;AMDGPU;X86" \
+      -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl" \
+      -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+      -DCOMPILER_RT_BUILD_XRAY=OFF \
+      -DCOMPILER_RT_BUILD_PROFILE=OFF \
+      -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+      -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+      -DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+      -DCLANG_DEFAULT_UNWINDLIB=libunwind \
+      -DCLANG_DEFAULT_RTLIB=compiler-rt \
+      -DCLANG_DEFAULT_LINKER="/usr/bin/ld.lld" \
+      -DDEFAULT_SYSROOT="/usr" \
+      -DLLVM_ENABLE_LLD=ON \
+      -DLLVM_ENABLE_RTTI=ON \
+      -DLLVM_ENABLE_ZLIB=OFF \
+      -DBacktrace_INCLUDE_DIR="/usr/include" \
+      -DBacktrace_LIBRARY="/usr/lib/libexecinfo.so" \
+      -DCMAKE_AR="/usr/bin/llvm-ar" \
+      -DCMAKE_INSTALL_OLDINCLUDEDIR="/usr/include" \
+      -DCMAKE_LINKER="/usr/bin/ld.lld" \
+      -DCMAKE_AR="/usr/bin/llvm-ar" \
+      -DCMAKE_LINKER="/usr/bin/ld.lld" \
+      -DCMAKE_NM="/usr/bin/llvm-nm" \
+      -DCMAKE_OBJCOPY="/usr/bin/llvm-objcopy" \
+      -DCMAKE_OBJDUMP="/usr/bin/llvm-objdump" \
+      -DCMAKE_RANLIB="/usr/bin/llvm-ranlib" \
+      -DCMAKE_READELF="/usr/bin/llvm-readelf" \
+      -DCMAKE_STRIP="/usr/bin/llvm-strip" \
+      -DICONV_LIBRARY_PATH="/usr/lib/libc.so" \
+      -DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
+      -DLLVM_INSTALL_CCTOOLS_SYMLINKS=ON  \
+      -DLLVM_INSTALL_UTILS=ON \
+      -DLLVM_ENABLE_BINDINGS=OFF \
+      -DLLVM_ENABLE_IDE=OFF \
+      -DLLVM_ENABLE_UNWIND_TABLES=OFF \
+      -DDEFAULT_SYSROOT="/usr"
+  make -j3 all
+}
+
+package() {
+  pkgdesc="Apple LLVM Clang compiler, Compiler RT and LD.LLD suite"
+
+  cd "$srcdir/llvm-$pkgver.src/build"
+
+  make DESTDIR="$pkgdir" install
+  cp -v $srcdir/llvm-$pkgver.src/build/bin/* $pkgdir/usr/bin
+  cp -v $srcdir/set-llvm-mode $srcdir/set-llvm-bin-mode $pkgdir/usr/bin/
+  chmod +x $pkgdir/usr/bin/set-llvm-{,bin-}mode
+}
+

@@ -1,0 +1,29 @@
+pkgname=zstd
+pkgver=1.5.0
+pkgrel=1
+arch=('x86_64')
+url=""
+license=('MIT')
+source=($pkgname-$pkgver.tar.gz)
+
+build() {
+  cd "$srcdir/$pkgname-$pkgver"
+  
+  CC=clang CXX=clang++ make
+  CC=clang CXX=clang++ make -C contrib/pzstd 
+}
+
+package() {
+  pkgdesc="Zstd compressing library"
+
+  cd "$srcdir/$pkgname-$pkgver"
+
+  make prefix=/usr DESTDIR=$pkgdir install
+  make prefix=/usr -C contrib/pzstd DESTDIR=$pkgdir install
+
+  rm -v $pkgdir/usr/lib/libzstd.a
+  mkdir -pv $pkgdir/lib
+  mv -v $pkgdir/usr/lib/libzstd.so.* $pkgdir/lib
+  ln -sfv ../../lib/libzstd.so.1.5.0 $pkgdir/usr/lib/libzstd.so
+}
+

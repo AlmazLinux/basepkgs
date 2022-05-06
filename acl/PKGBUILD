@@ -1,0 +1,29 @@
+pkgname=acl
+pkgver=2.3.1
+pkgrel=1
+pkgdesc="Access control list utilities, libraries and headers"
+arch=('x86_64')
+url="http://savannah.nongnu.org/projects/acl"
+license=('LGPL')
+source=(${pkgname}-${pkgver}.tar.xz)
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    CC=clang CXX=clang++ ./configure --prefix=/usr    \
+		--bindir=/bin    \
+		--disable-static \
+		--libexecdir=/usr/lib \
+                --docdir=/usr/share/doc/acl-2.3.1
+    make
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    
+    make DESTDIR="$pkgdir" install
+
+    chmod -v 755 ${pkgdir}/usr/lib/libacl.so
+    install -vdm755 ${pkgdir}/lib
+    mv -v ${pkgdir}/usr/lib/libacl.so.* ${pkgdir}/lib
+    ln -sfv ../../lib/$(readlink ${pkgdir}/usr/lib/libacl.so) ${pkgdir}/usr/lib/libacl.so
+}

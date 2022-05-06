@@ -1,0 +1,28 @@
+pkgname=sed
+pkgver=4.8
+pkgrel=1
+pkgdesc="GNU stream editor"
+arch=('x86_64')
+url="https://www.gnu.org/software/sed/"
+license=('GPL3')
+source=(${pkgname}-${pkgver}.tar.xz)
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    CC=clang CXX=clang++ ./configure --prefix=/usr --bindir=/bin
+
+    make
+    make html
+}
+
+check() {
+    cd "${pkgname}-${pkgver}"
+    make check 2>&1 | tee ${pkgname}-${pkgver}-check-log
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make DESTDIR=${pkgdir} install
+    install -vdm755             ${pkgdir}/usr/share/doc/sed-4.8
+    install -vm644 doc/sed.html ${pkgdir}/usr/share/doc/sed-4.8
+}

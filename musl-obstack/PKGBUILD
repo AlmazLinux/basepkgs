@@ -1,0 +1,27 @@
+pkgname=musl-obstack
+pkgver=1.1
+pkgrel=1
+pkgdesc="Musl Obstack realization"
+arch=('x86_64')
+url="https://github.com/pullmoll/musl-obstack"
+license=('custom')
+backup=()
+source=(${pkgname}-${pkgver}.tar.gz)
+
+prepare(){
+    cd "${pkgname}-${pkgver}"
+    sed -i "/pkgconfig_DATA/i pkgconfigdir=/usr/lib/pkgconfig" Makefile.am
+    ./bootstrap.sh
+} 
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    CC=clang CXX=clang++ CFLAGS=" -fPIC" \
+               ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
+    make
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make DESTDIR=${pkgdir} install
+}

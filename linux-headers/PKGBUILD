@@ -1,0 +1,28 @@
+pkgname=linux-headers
+pkgver=5.13.7
+pkgrel=1
+pkgdesc="Kernel headers sanitized for use in userspace"
+arch=('x86_64')
+url="https://www.kernel.org"
+license=('GPL2')
+source=(linux-${pkgver}.tar.xz 
+        include-uapi-linux-swab-Fix-potentially-missing-__always_inline.patch)
+
+prepare() {
+    cd "linux-${pkgver}"
+    patch -Np1 -i ../include-uapi-linux-swab-Fix-potentially-missing-__always_inline.patch
+}
+
+build() {
+    cd "linux-${pkgver}"
+    LLVM=1 LLVM_IAS=1 make mrproper
+    LLVM=1 LLVM_IAS=1 make CC=clang HOSTCC=clang headers
+}
+
+package() {
+    cd "linux-${pkgver}"
+    find usr/include -name '.*' -delete
+    install -vdm755 ${pkgdir}/usr/include
+    cp -rv usr/include/* ${pkgdir}/usr/include
+    rm ${pkgdir}/usr/include/Makefile
+}

@@ -1,0 +1,29 @@
+pkgname=gzip
+pkgver=1.10
+pkgrel=1
+pkgdesc="GNU compression utility"
+arch=('x86_64')
+url="http://www.gnu.org/software/gzip/"
+license=('GPL3')
+source=(${pkgname}-${pkgver}.tar.xz)
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    CC=clang CXX=clang++ \
+        DEFS=NO_ASM gl_cv_func_fflush_stdin=yes \
+        ./configure --prefix=/usr
+    make
+}
+
+check() {
+    cd "${pkgname}-${pkgver}"
+    make check 2>&1 | tee ${pkgname}-${pkgver}-check-log
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make DESTDIR=${pkgdir} install
+
+    install -vdm755 ${pkgdir}/bin
+    mv -v ${pkgdir}/usr/bin/gzip ${pkgdir}/bin
+}
