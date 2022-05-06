@@ -1,5 +1,0 @@
-post_install() {
-    echo "=> Updating udev database..."
-    LD_LIBRARY_PATH=/usr/lib udevadm hwdb --update
-}
-
