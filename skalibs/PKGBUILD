@@ -1,0 +1,24 @@
+pkgname=skalibs
+pkgver=2.11.2.0
+pkgrel=1
+pkgdesc="SKA Libraries"
+arch=('x86_64')
+url="https://skalibs.org"
+license=('MIT')
+provides=()
+backup=()
+source=(${pkgname}-${pkgver}.tar.gz)
+
+build() {
+    cd "${pkgname}-${pkgver}"
+
+    CC=clang LD=ld.lld ./configure --prefix=/usr --enable-static  --enable-shared --libdir=/usr/lib
+    
+    make
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make DESTDIR=${pkgdir} install
+    chmod u-s -Rv ${pkgdir}
+}

@@ -1,0 +1,47 @@
+pkgname=man-db
+pkgver=2.10.2
+pkgrel=1
+pkgdesc="A utility for reading man pages"
+arch=('x86_64')
+url="http://www.nongnu.org/man-db/"
+license=('GPL' 'LGPL')
+source=(${pkgname}-${pkgver}.tar.xz
+	guard-glibc-iconv-ext.patch
+	add-missing-stdlib_h-include.patch)
+
+prepare() {
+    cd "${pkgname}-${pkgver}"
+    patch -Np0 -i ${srcdir}/guard-glibc-iconv-ext.patch
+    patch -Np0 -i ${srcdir}/add-missing-stdlib_h-include.patch 
+}
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    CC=clang CXX=clang++ \
+	./configure --prefix=/usr                        \
+            --docdir=/usr/share/doc/${pkgname}-${pkgver} \
+            --sysconfdir=/etc                    \
+            --disable-setuid                     \
+            --enable-cache-owner=bin             \
+            --with-browser=/usr/bin/lynx         \
+            --with-vgrind=/usr/bin/vgrind        \
+            --with-grap=/usr/bin/grap            \
+            --with-systemdtmpfilesdir=           \
+            --with-systemdsystemunitdir=         \
+            --with-pager=less                    \
+            --disable-rpath                      \
+            --enable-threads=posix               \
+            --without-included-regex             \
+            --enable-automatic-create 
+    make
+}
+
+check() {
+    cd "${pkgname}-${pkgver}"
+    make check 2>&1 | tee ${pkgname}-${pkgver}-check-log
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make DESTDIR=${pkgdir} install
+}

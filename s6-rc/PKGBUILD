@@ -1,0 +1,27 @@
+pkgname=s6-rc
+pkgver=0.5.3.0
+pkgrel=1
+pkgdesc=""
+arch=('x86_64')
+url=""
+license=('custom')
+backup=()
+source=(${pkgname}-${pkgver}.tar.gz)
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    CC=clang CXX=clang++ \
+      ./configure --enable-shared         \
+            --enable-static         \
+            --enable-allstatic      \
+            --enable-static-libc    \
+            --libdir=/usr/lib       \
+            --libexecdir=/lib/s6-rc \
+            --with-dynlib=/lib
+    make
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make DESTDIR=${pkgdir} install
+}

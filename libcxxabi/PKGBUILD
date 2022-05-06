@@ -1,0 +1,55 @@
+pkgname=llvm-libcxxabi
+pkgver=14.0.0
+pkgrel=1
+arch=('x86_64')
+url="https://llvm.org/"
+license=('custom:Apache 2.0 with LLVM Exception')
+source=(llvm-$pkgver.src.tar.xz
+	libcxxabi-$pkgver.src.tar.xz
+	libcxx-$pkgver.src.tar.xz)
+
+prepare() {
+  cd "$srcdir/llvm-$pkgver.src"
+
+  mv -v $srcdir/libcxxabi-$pkgver.src projects/libcxxabi
+  mv -v $srcdir/libcxx-$pkgver.src projects/libcxx
+
+  cd "$srcdir/llvm-$pkgver.src/projects/libcxxabi"
+  mkdir build
+  ## https://bugs.archlinux.org/task/70697
+  #patch -Np2 -i ../llvm-link-with-Bsymbolic-functions.patch
+  ## https://reviews.llvm.org/D102453
+  #patch -Np2 -i ../add-fno-semantic-interposition.patch
+  #
+  ## https://bugs.llvm.org/show_bug.cgi?id=50823
+  #patch -Np2 -i ../x86-twist-shuffle-mask.patch
+  #
+  ## Work around intermittent 'clang -O -g' crashes
+  ## https://bugs.llvm.org/show_bug.cgi?id=50611#c3
+  #patch -Np2 -i ../no-strict-aliasing-DwarfCompileUnit.patch
+}
+
+build() {
+  cd "$srcdir/llvm-$pkgver.src/projects/libcxxabi/build"
+
+  cmake .. -G "Unix Makefiles" \
+      -DLLVM_PATH=$srcdir/llvm-$pkgver.src \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DLIBCXXABI_ENABLE_STATIC=ON \
+      -DLIBCXXABI_USE_COMPILER_RT=ON \
+      -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+      -DLIBCXXABI_LIBUNWIND_PATH="/usr/lib" \
+      -DLIBCXXABI_LIBCXX_INCLUDES="$srcdir/llvm-$pkgver.src/projects/libcxx/include" 
+  make all
+}
+
+package() {
+  pkgdesc="Apple LLVM libcxx library ABI"
+
+  cd "$srcdir/llvm-$pkgver.src/projects/libcxxabi/build"
+
+  make DESTDIR="$pkgdir" install
+  mkdir -pv ${pkgdir}/usr/include/
+  cp -v $srcdir/llvm-$pkgver.src/projects/libcxxabi/include/*.h ${pkgdir}/usr/include/
+}
+

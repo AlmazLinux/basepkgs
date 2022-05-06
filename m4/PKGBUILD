@@ -1,0 +1,34 @@
+pkgname=m4
+pkgver=1.4.19
+pkgrel=1
+pkgdesc="The GNU macro processor"
+arch=('x86_64')
+url="http://www.gnu.org/software/m4"
+license=('GPL3')
+source=(${pkgname}-${pkgver}.tar.xz
+	disable-mbrtowc-test.patch
+	gnulib-tests-dont-require-gpg-passphrase.patch)
+	#localename-test-fix.patch)
+
+prepare() {
+    cd "${pkgname}-${pkgver}"
+    patch -Np1 -i ../disable-mbrtowc-test.patch
+    patch -Np1 -i ../gnulib-tests-dont-require-gpg-passphrase.patch
+    #patch -Np1 -i ../localename-test-fix.patch
+}
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    ./configure --prefix=/usr
+    make
+}
+
+check() {
+    cd "${pkgname}-${pkgver}"
+    make check 2>&1 | tee ${pkgname}-${pkgver}-check-log
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make prefix=${pkgdir}/usr install
+}

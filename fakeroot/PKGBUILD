@@ -1,0 +1,50 @@
+pkgname=fakeroot
+pkgver=1.28.0
+pkgrel=1
+pkgdesc="Tool for simulating superuser privileges"
+arch=('x86_64')
+url="http://turul.canonical.com/pool/main/f/fakeroot/"
+license=('GPL')
+source=(${pkgname}_${pkgver}.orig.tar.gz
+	cross-dont-run-sysv-ipc-test.patch
+	fakeroot-no64.patch
+	fakeroot-stdint.patch)
+
+prepare() {
+    cd "${pkgname}-${pkgver}"
+    patch -Np1 -i ${srcdir}/cross-dont-run-sysv-ipc-test.patch
+    patch -Np1 -i ${srcdir}/fakeroot-no64.patch
+    patch -Np1 -i ${srcdir}/fakeroot-stdint.patch
+
+    export CFLAGS="-D_STAT_VER=0"
+
+    sed -i scripts/fakeroot.in -e 's/@LDPRELOADABS@/1/'
+    sed -i doc/Makefile.am -e '/SUBDIRS/d'
+    sed -i test/Makefile.am -e '/  t\.tar/d'
+    sed -i test/Makefile.am -e '/  t\.chmod_dev/d' -e '/  t\.mknod/d'
+    sed -i test/Makefile.am -e '/  t\.touchinstall/d'
+          
+    sh ./bootstrap
+    unset CFLAGS
+}
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    export CFLAGS="-D_STAT_VER=0"
+    CC=clang CXX=clang++ ./configure --prefix=/usr \
+		--libdir=/usr/lib/libfakeroot \
+		--disable-static \
+		--with-ipc=sysv
+    make
+    unset CFLAGS
+}
+
+check() {
+    cd "${pkgname}-${pkgver}"
+    make check 2>&1 | tee ${pkgname}-${pkgver}-check-log
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make DESTDIR=${pkgdir} install
+}

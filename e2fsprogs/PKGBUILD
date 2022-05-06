@@ -1,0 +1,57 @@
+pkgname=e2fsprogs
+pkgver=1.46.5
+pkgrel=1
+pkgdesc="Ext2/3/4 filesystem utilities"
+arch=('x86_64')
+url="http://e2fsprogs.sourceforge.net/"
+license=('GPL' 'LGPL' 'MIT')
+source=(${pkgname}-${pkgver}.tar.gz
+	header-fix.patch
+	time64.patch)
+
+prepare() {
+    cd "${pkgname}-${pkgver}"
+    patch -Np1 -i ${srcdir}/header-fix.patch
+    patch -Np1 -i ${srcdir}/time64.patch
+}
+
+build() {
+    cd "${pkgname}-${pkgver}"
+
+    mkdir -v build
+    cd build
+ 
+    CC=clang CXX=clang++                 \
+        e2fsprogs_cv_struct_st_flags=no      \
+        ../configure --prefix=/usr           \
+                 --bindir=/bin           \
+		 --with-root-prefix=""   \
+		 --enable-elf-shlibs     \
+		 --disable-libblkid      \
+		 --disable-libuuid       \
+		 --disable-uuidd         \
+		 --disable-fsck          \
+                 --enable-e2initrd-helper \
+                 --disable-rpath 
+
+    make
+}
+
+check() {
+    cd "${pkgname}-${pkgver}/build"
+    make check 2>&1 | tee ${pkgname}-${pkgver}-check-log
+}
+
+package() {
+    cd "${pkgname}-${pkgver}/build"
+    make DESTDIR=${pkgdir} install install-libs
+
+     chmod -v u+w ${pkgdir}/usr/lib/{libcom_err,libe2p,libext2fs,libss}.a
+
+     gunzip -v ${pkgdir}/usr/share/info/libext2fs.info.gz
+    install-info --dir-file=${pkgdir}/usr/share/info/dir ${pkgdir}/usr/share/info/libext2fs.info
+
+     makeinfo -o doc/com_err.info ../lib/et/com_err.texinfo
+    install -v -m644 doc/com_err.info ${pkgdir}/usr/share/info
+    install-info --dir-file=${pkgdir}/usr/share/info/dir ${pkgdir}/usr/share/info/com_err.info
+}

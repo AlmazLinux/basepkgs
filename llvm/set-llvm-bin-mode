@@ -1,0 +1,17 @@
+#! /bin/bash
+echo "[ 1 / 2 ] Clearing links..."  && \
+for b in ar as dwp nm objcopy objdump size strings addr2line c++filt ranlib readelf strip
+do
+  rm -v /usr/bin/$b
+done                      && \
+echo "[ 2 / 2 ] Setting LLVM as system binary tools..." && \
+for b in ar as dwp nm objcopy objdump size strings 
+do
+  ln -sv llvm-$b /usr/bin/$b
+done                                          && \
+ln -sv llvm-symbolizer /usr/bin/addr2line     && \
+ln -sv llvm-cxxfilt    /usr/bin/c++filt       && \
+ln -sv llvm-ar         /usr/bin/ranlib        && \
+ln -sv llvm-readobj    /usr/bin/readelf       && \
+ln -sv llvm-objcopy    /usr/bin/strip         && \
+echo "[ info  ] LLVM Binary tools set as system default"

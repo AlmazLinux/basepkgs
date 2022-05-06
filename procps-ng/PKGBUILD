@@ -1,0 +1,48 @@
+pkgname=procps-ng
+_pkgname=procps
+pkgver=4.0.0
+pkgrel=1
+pkgdesc="Utilities for monitoring your system and its processes"
+arch=('x86_64')
+url="https://gitlab.com/procps-ng/procps"
+license=('GPL' 'LGPL')
+source=(${pkgname}-${pkgver}.tar.xz
+	use_utmpx.patch)
+
+prepare() {
+    cd "${_pkgname}-${pkgver}"
+    autoreconf -fiv
+    patch -Np1 -i ${srcdir}/use_utmpx.patch
+    sed -i '1i#include <langinfo.h>' proc/escape.c
+}
+
+build() {
+    cd "${_pkgname}-${pkgver}"
+    LIBS="$LIBS -lutmps -lskarnet"   \
+                ac_cv_func_malloc_0_nonnull=yes  \
+                ac_cv_func_realloc_0_nonnull=yes \
+                ./configure --prefix=/usr                   \
+		--exec-prefix=                              \
+		--libdir=/usr/lib                           \
+		--docdir=/usr/share/doc/procps-ng-${pkgver} \
+		--disable-static                            \
+		--disable-kill                              \
+                --enable-watch8bit                          \
+                --without-systemd --disable-modern-top
+    make
+}
+
+check() {
+    cd "${_pkgname}-${pkgver}"
+    make check 2>&1 | tee ${pkgname}-${pkgver}-check-log
+}
+
+package() {
+    cd "${_pkgname}-${pkgver}"
+    make DESTDIR=${pkgdir} install
+
+    install -vdm755 ${pkgdir}/lib
+    install -vdm755 ${pkgdir}/usr/lib
+    mv -v ${pkgdir}/usr/lib/libprocps.so.* ${pkgdir}/lib
+    ln -sfv ../../lib/$(readlink ${pkgdir}/usr/lib/libprocps.so) ${pkgdir}/usr/lib/libprocps.so
+}

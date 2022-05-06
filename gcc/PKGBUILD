@@ -1,0 +1,140 @@
+pkgname=gcc
+pkgver=11.2.1
+_pkgrev=_git20220219
+pkgrel=1
+pkgdesc="The GNU Compiler Collection"
+arch=('x86_64')
+url="http://gcc.gnu.org"
+_source_url="https://dev.alpinelinux.org/~nenolod/$pkgname/$pkgname-$pkgver$_pkgrev.tar.xz"
+license=('GPL' 'LGPL' 'FDL' 'custom')
+provides=('isl=0.24')
+_islpkgname=isl
+_islpkgver=0.24
+source=(${pkgname}-${pkgver}${_pkgrev}.tar.xz
+	${_islpkgname}-${_islpkgver}.tar.bz2
+	set-gcc-mode
+	0001-posix_memalign.patch
+	0002-gcc-poison-system-directories.patch
+	0003-specs-turn-on-Wl-z-now-by-default.patch
+	0004-Turn-on-D_FORTIFY_SOURCE-2-by-default-for-C-C-ObjC-O.patch
+	0005-On-linux-targets-pass-as-needed-by-default-to-the-li.patch
+	0006-Enable-Wformat-and-Wformat-security-by-default.patch
+	0007-Enable-Wtrampolines-by-default.patch
+	0008-Disable-ssp-on-nostdlib-nodefaultlibs-and-ffreestand.patch
+	0009-Ensure-that-msgfmt-doesn-t-encounter-problems-during.patch
+	0010-Don-t-declare-asprintf-if-defined-as-a-macro.patch
+	0011-libiberty-copy-PIC-objects-during-build-process.patch
+	0012-libitm-disable-FORTIFY.patch
+	0013-libgcc_s.patch
+	0014-nopie.patch
+	0015-libffi-use-__linux__-instead-of-__gnu_linux__-for-mu.patch
+	0016-dlang-update-zlib-binding.patch
+	0017-dlang-use-libucontext-on-mips64.patch
+	0018-dlang-libdruntime-define-fcntl.h-constants-for-mips6.patch
+	0019-ada-fix-shared-linking.patch
+	0020-build-fix-CXXFLAGS_FOR_BUILD-passing.patch
+	0021-add-fortify-headers-paths.patch
+	0022-Alpine-musl-package-provides-libssp_nonshared.a.-We-.patch
+	0023-DP-Use-push-state-pop-state-for-gold-as-well-when-li.patch
+	0024-mips64-disable-multilib-support.patch
+	0025-aarch64-disable-multilib-support.patch
+	0026-s390x-disable-multilib-support.patch
+	0027-ppc64-le-disable-multilib-support.patch
+	0028-x86_64-disable-multilib-support.patch
+	0029-riscv-disable-multilib-support.patch
+	0030-always-build-libgcc_eh.a.patch
+	0031-ada-libgnarl-compatibility-for-musl.patch
+	0032-ada-musl-support-fixes.patch
+	0033-gcc-go-Fix-handling-of-signal-34-on-musl.patch
+	0034-There-are-more-than-one-st_-a-m-c-tim-fields-in-stru.patch
+	0035-gcc-go-signal-34-is-special-on-musl-libc.patch
+	0036-gcc-go-undef-SETCONTEXT_CLOBBERS_TLS-in-proc.c.patch
+	0037-gcc-go-link-to-libucontext.patch
+	0038-Use-generic-errstr.go-implementation-on-musl.patch
+	0039-configure-Add-enable-autolink-libatomic-use-in-LINK_.patch
+	0040-configure-fix-detection-of-atomic-builtins-in-libato.patch
+	0041-libgo-Recognize-off64_t-and-loff_t-definitions-of-mu.patch
+	0042-Fix-attempt-to-use-poisoned-calloc-error-in-libgccji.patch
+	0043-stddef.h-add-support-for-musl-typedef-macro-guards.patch
+	0044-gcc-go-Use-int64-type-as-offset-argument-for-mmap.patch
+	0045-libgo-include-asm-ptrace.h-for-pt_regs-definition-on.patch
+	0046-Disable-fsplit-stack-support-on-non-glibc-targets.patch
+	0047-x86-Properly-disable-fsplit-stack-support-on-non-gli.patch
+	0048-gdc-unconditionally-link-libgphobos-against-libucont.patch
+	0049-properly-disable-fsplit-stack-on-non-glibc-targets-P.patch
+	0050-x86-Fix-fsplit-stack-feature-detection-via-TARGET_CA.patch
+	0051-go-gospec-forcibly-disable-fsplit-stack-support.patch
+)
+
+prepare() {
+    cd "${pkgname}-${pkgver}"
+    mv -v ../${_islpkgname}-${_islpkgver} ./${_islpkgname}
+    for i in $(ls $srcdir/*.patch); do patch -Np1 -i $i && continue ; done
+    sed -e '/m64=/s/lib64/lib/' -i.orig gcc/config/i386/t-linux64
+}
+
+build() {
+    cd "${pkgname}-${pkgver}"
+
+    mkdir -v build
+    cd build
+
+    CC=gcc.gnu   \
+    CXX=g++.gnu \
+    SED=sed  libat_cv_have_ifunc=no       \
+    ../configure --prefix=/usr            \
+                 --build=x86_64-linux-musl \
+                 --with-system-zlib       \
+                 --with-isl \
+                 --with-linker-hash-style=gnu \
+                 --enable-languages=c,c++ \
+                 --enable-threads=posix \
+                 --enable-clocale=generic \
+                 --enable-tls \
+                 --enable-libstdcxx-time \
+                 --enable-fully-dynamic-string \
+                 --enable-default-pie \
+                 --enable-default-ssp \
+                 --enable-linker-build-id \
+                 --enable-checking=release \
+	         --enable-cloog-backend \
+	         --enable-__cxa_atexit  \
+                 --enable-lto \
+                 --enable-plugins \
+                 --disable-libstdcxx-pch \
+                 --disable-nls \
+                 --disable-multilib       \
+                 --disable-bootstrap      \
+                 --disable-symvers \
+                 --disable-libsanitizer \
+                 --disable-libssp \
+	         --disable-libmpx \
+                 --disable-libmudflap \
+	         --disable-fixed-point \
+	         --disable-sjlj-exceptions \
+	         --disable-werror --with-arch=x86-64 \
+                 --with-pkgversion="Almaz Linux 0.0.1"
+    make
+}
+
+package() {
+    cd "${pkgname}-${pkgver}/build"
+
+    make DESTDIR=${pkgdir} install
+
+    for b in gcc cpp g++ c++; do mv -v ${pkgdir}/usr/bin/{$b,$b.gnu}; done  
+
+    install -vdm755 ${pkgdir}/lib
+    ln -sv ../usr/bin/cpp.gnu ${pkgdir}/lib
+
+    ln -sv gcc ${pkgdir}/usr/bin/cc
+
+    install -vdm755 ${pkgdir}/usr/lib/bfd-plugins
+    ln -sfv ../../libexec/gcc/x86_64-pc-linux-musl/${pkgver}/liblto_plugin.so \
+       ${pkgdir}/usr/lib/bfd-plugins/
+
+    install -vdm755 ${pkgdir}/usr/share/gdb/auto-load/usr/lib
+    mv -v ${pkgdir}/usr/lib/*gdb.py ${pkgdir}/usr/share/gdb/auto-load/usr/lib
+    cp $srcdir/set-gcc-mode $pkgdir/usr/bin -v
+    chmod -v +x $pkgdir/usr/bin/set-gcc-mode
+}

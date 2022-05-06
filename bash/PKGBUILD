@@ -1,0 +1,29 @@
+pkgname=bash
+pkgver=5.1.16
+pkgrel=1
+pkgdesc="The GNU Bourne Again shell"
+arch=('x86_64')
+url="http://www.gnu.org/software/bash/bash.html"
+license=('GPL')
+source=(${pkgname}-${pkgver}.tar.gz)
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    CC=clang CXX=clang++ ./configure --prefix=/usr                          \
+		--docdir=/usr/share/doc/bash-${pkgver} \
+		--without-bash-malloc                  \
+		--with-installed-readline --with-curses
+    make
+}
+
+check() {
+    cd "${pkgname}-${pkgver}"
+    make check 2>&1 | tee ${pkgname}-${pkgver}-check-log
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make DESTDIR=${pkgdir} install
+    install -vdm755 ${pkgdir}/bin
+    mv -vf ${pkgdir}/usr/bin/bash ${pkgdir}/bin
+}

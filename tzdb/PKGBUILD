@@ -1,0 +1,50 @@
+pkgname=tzdb
+pkgver=2022a
+pkgrel=1
+pkgdesc="Sources for time zone and daylight saving time data"
+arch=('x86_64')
+url="http://www.iana.org/time-zones"
+license=('GPL')
+backup=()
+source=(tzdata${pkgver}.tar.gz
+	tzcode${pkgver}.tar.gz
+	posixtz-0.5.tar.xz
+	0001-posixtz-fix-up-lseek.patch)
+
+timezones=()
+
+prepare() {
+    cd ${srcdir}
+    patch -Np1 -i ${srcdir}/0001-posixtz-fix-up-lseek.patch
+}
+
+build() {
+    cd ${srcdir}
+    make CFLAGS="$CFLAGS -DHAVE_STDINT_H=1" TZDIR="/usr/share/zoneinfo"  
+    make -C posixtz-0.5 posixtz
+}
+
+package() {
+    cd "${srcdir}"
+
+    ZONEINFO=${pkgdir}/usr/share/zoneinfo
+    install -vdm755 $ZONEINFO/{posix,right}
+
+    for tz in africa antarctica asia australasia europe northamerica \
+                  southamerica etcetera backward factory; do
+	./zic -d $ZONEINFO ${tz}
+	./zic -d $ZONEINFO/posix ${tz}
+	./zic -L leapseconds -d $ZONEINFO/right ${tz}
+    done
+
+    cp -v zone.tab zone1970.tab iso3166.tab $ZONEINFO
+    ./zic -d $ZONEINFO -p Europe/Moscow
+    mkdir -pv ${pkgdir}/usr/{bin,sbin}
+    cp -v ${srcdir}/tzselect  ${pkgdir}/usr/bin/tzselect
+    cp -v ${srcdir}/zic ${pkgdir}/usr/sbin/zic
+    cp -v ${srcdir}/zdump ${pkgdir}/usr/sbin/zdump
+    install -Dm644 ${srcdir}/zic.8 ${pkgdir}/usr/share/man/man8/zic.8
+    install -Dm644 ${srcdir}/zdump.8 ${pkgdir}/usr/share/man/man8/zdump.8
+    cp -v ${srcdir}/posixtz-0.5/posixtz ${pkgdir}/usr/bin/posixtz
+    unset ZONEINFO
+}
