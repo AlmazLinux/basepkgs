@@ -1,14 +1,16 @@
 pkgname=gcc
-pkgver=11.2.0
+pkgver=11.2.1
+_pkgrev=_git20220219
 pkgrel=1
 pkgdesc="The GNU Compiler Collection"
 arch=('x86_64')
 url="http://gcc.gnu.org"
+_source_url="https://dev.alpinelinux.org/~nenolod/$pkgname/$pkgname-$pkgver$_pkgrev.tar.xz"
 license=('GPL' 'LGPL' 'FDL' 'custom')
 provides=('isl=0.24')
 _islpkgname=isl
 _islpkgver=0.24
-source=(${pkgname}-${pkgver}.tar.xz
+source=(${pkgname}-${pkgver}${_pkgrev}.tar.xz
 	${_islpkgname}-${_islpkgver}.tar.bz2
 	set-gcc-mode
 	0001-posix_memalign.patch

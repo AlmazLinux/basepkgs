@@ -1,5 +1,5 @@
 pkgname=less
-pkgver=581
+pkgver=590
 pkgrel=1
 pkgdesc="A terminal based program for viewing text files"
 arch=('x86_64')

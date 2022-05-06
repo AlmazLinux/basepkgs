@@ -44,8 +44,7 @@ build() {
                  --enable-threads                    \
                  --disable-multilib                  \
                  --disable-compressed-debug-sections \
-                 --with-mmap --enable-targets=x86_64-pep --enable-64-bit-bfd --cache-file=../config.cache \
-                 --with-pkgversion="Almaz Linux 0.0.1"
+                 --with-mmap --enable-targets=x86_64-pep --enable-64-bit-bfd --cache-file=../config.cache 
 
     make tooldir=/usr
 

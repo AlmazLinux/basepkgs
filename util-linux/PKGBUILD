@@ -1,5 +1,5 @@
 pkgname=util-linux
-pkgver=2.36.2
+pkgver=2.38
 pkgrel=1
 pkgdesc="Miscellaneous system utilities for Linux"
 arch=('x86_64')

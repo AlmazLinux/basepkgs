@@ -1,9 +1,10 @@
 pkgname=cpio
 pkgver=2.13
 pkgrel=1
-pkgdesc=""
+pkgdesc="CPIO Archive library and utils"
 arch=('x86_64')
-url=""
+usr=""
+_source_url="https://ftp.gnu.org/gnu/cpio/"
 license=('custom')
 backup=()
 source=(${pkgname}-${pkgver}.tar.bz2)

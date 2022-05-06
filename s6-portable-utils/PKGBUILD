@@ -1,5 +1,5 @@
 pkgname=s6-portable-utils
-pkgver=2.2.3.2
+pkgver=2.2.4.0
 pkgrel=1
 pkgdesc=""
 arch=('x86_64')

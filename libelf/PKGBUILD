@@ -1,6 +1,6 @@
 pkgname=libelf
 _elfname=elfutils
-pkgver=0.183
+pkgver=0.187
 pkgrel=1
 pkgdesc="ELF executable format library"
 arch=('x86_64')

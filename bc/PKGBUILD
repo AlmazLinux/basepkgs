@@ -1,9 +1,10 @@
 pkgname=bc
-pkgver=4.0.2
+pkgver=5.2.5
 pkgrel=1
 pkgdesc="An arbitrary precision calculator language"
 arch=('x86_64')
 url="https://www.gnu.org/software/bc/"
+_source_url="https://github.com/gavinhoward/bc"
 license=('GPL')
 source=(${pkgname}-${pkgver}.tar.xz)
 

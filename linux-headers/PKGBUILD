@@ -1,5 +1,5 @@
 pkgname=linux-headers
-pkgver=5.13.7
+pkgver=5.17
 pkgrel=1
 pkgdesc="Kernel headers sanitized for use in userspace"
 arch=('x86_64')

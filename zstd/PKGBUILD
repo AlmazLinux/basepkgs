@@ -1,5 +1,5 @@
 pkgname=zstd
-pkgver=1.5.0
+pkgver=1.5.2
 pkgrel=1
 arch=('x86_64')
 url=""
@@ -24,6 +24,6 @@ package() {
   rm -v $pkgdir/usr/lib/libzstd.a
   mkdir -pv $pkgdir/lib
   mv -v $pkgdir/usr/lib/libzstd.so.* $pkgdir/lib
-  ln -sfv ../../lib/libzstd.so.1.5.0 $pkgdir/usr/lib/libzstd.so
+  ln -sfv ../../lib/libzstd.so.1.5.2 $pkgdir/usr/lib/libzstd.so
 }
 

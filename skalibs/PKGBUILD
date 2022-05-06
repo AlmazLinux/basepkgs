@@ -1,5 +1,5 @@
 pkgname=skalibs
-pkgver=2.10.0.3
+pkgver=2.11.2.0
 pkgrel=1
 pkgdesc="SKA Libraries"
 arch=('x86_64')

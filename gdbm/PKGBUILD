@@ -1,5 +1,5 @@
 pkgname=gdbm
-pkgver=1.19
+pkgver=1.23
 pkgrel=1
 pkgdesc="GNU database library"
 arch=('x86_64')

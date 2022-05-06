@@ -1,9 +1,10 @@
 # Maintainer: Pierre Schmitz <pierre@archlinux.de>
 
 pkgname=openssl
-_ver=1.1.1l
+#_ver=1.1.1l
 # use a pacman compatible version scheme
-pkgver=${_ver/[a-z]/.${_ver//[0-9.]/}}
+#pkgver=${_ver/[a-z]/.${_ver//[0-9.]/}}
+var=3.0.3
 pkgrel=1
 pkgdesc='The Open Source toolkit for Secure Sockets Layer and Transport Layer Security'
 arch=('x86_64')

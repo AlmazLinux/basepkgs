@@ -1,5 +1,5 @@
 pkgname=diffutils
-pkgver=3.7
+pkgver=3.8
 pkgrel=1
 pkgdesc="Utility programs used for creating patch files"
 arch=('x86_64')

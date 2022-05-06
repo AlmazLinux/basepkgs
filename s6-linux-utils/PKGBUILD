@@ -1,5 +1,5 @@
 pkgname=s6-linux-utils
-pkgver=2.5.1.5
+pkgver=2.5.1.7
 pkgrel=1
 pkgdesc=""
 arch=('x86_64')

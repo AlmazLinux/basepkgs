@@ -1,5 +1,5 @@
 pkgname=s6-linux-init
-pkgver=1.0.6.3
+pkgver=1.0.7.3
 pkgrel=1
 pkgdesc=""
 arch=('x86_64')

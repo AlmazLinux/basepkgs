@@ -1,6 +1,6 @@
 pkgname=python
 _pkgname=Python
-pkgver=3.10.0rc1
+pkgver=3.10.4
 pkgrel=1
 pkgdesc="Python Language package"
 arch=('x86_64')

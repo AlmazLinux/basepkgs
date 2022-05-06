@@ -1,5 +1,5 @@
 pkgname=s6-rc
-pkgver=0.5.2.2
+pkgver=0.5.3.0
 pkgrel=1
 pkgdesc=""
 arch=('x86_64')

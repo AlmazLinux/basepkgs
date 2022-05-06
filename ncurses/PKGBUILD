@@ -1,5 +1,5 @@
 pkgname=ncurses
-pkgver=6.2
+pkgver=6.3
 pkgrel=1
 pkgdesc="System V Release 4.0 curses emulation library"
 arch=('x86_64')
@@ -43,6 +43,6 @@ package() {
     echo "INPUT(-lncursesw)" >  ${pkgdir}/usr/lib/libcursesw.so
     ln -sfv libncurses.so       ${pkgdir}/usr/lib/libcurses.so
 
-    install -vdm755 ${pkgdir}/usr/share/doc/ncurses-6.2
-    cp -vR doc/*    ${pkgdir}/usr/share/doc/ncurses-6.2
+    install -vdm755 ${pkgdir}/usr/share/doc/ncurses-6.3
+    cp -vR doc/*    ${pkgdir}/usr/share/doc/ncurses-6.3
 }

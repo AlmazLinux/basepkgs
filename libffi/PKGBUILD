@@ -1,7 +1,7 @@
 pkgname=libffi
 pkgver=3.4.2
 pkgrel=1
-pkgdesc="ELF executable format library"
+pkgdesc="A portable foreign-function interface library"
 arch=('x86_64')
 url=""
 license=('custom')

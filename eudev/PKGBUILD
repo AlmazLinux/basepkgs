@@ -1,5 +1,5 @@
 pkgname=eudev
-pkgver=3.2.10
+pkgver=3.2.11
 pkgrel=1
 pkgdesc="Programs for dynamic creation of device nodes"
 arch=('x86_64')

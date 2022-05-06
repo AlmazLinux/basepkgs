@@ -1,5 +1,5 @@
 pkgname=libarchive
-pkgver=3.5.1
+pkgver=3.6.1
 pkgrel=1
 pkgdesc="library that can create and read several streaming archive formats"
 arch=('x86_64')

@@ -1,5 +1,5 @@
 pkgname=coreutils
-pkgver=8.32
+pkgver=9.0
 pkgrel=1
 pkgdesc="The basic file, shell and text manipulation utilities of the GNU operating system"
 arch=('x86_64')
